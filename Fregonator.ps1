@@ -229,8 +229,13 @@ function Update-Monitor {
     } catch {}
 }
 
-# Inicializar monitor
-Update-Monitor -Etapa "Iniciando FREGONATOR" -Progreso 0 -Log "Sistema iniciado"
+# Inicializar monitor (deteccion de idioma inline para este punto temprano)
+$_initLang = "es"
+$_langFile = "$env:LOCALAPPDATA\FREGONATOR\lang.txt"
+if (Test-Path $_langFile) { $_initLang = (Get-Content $_langFile -Raw).Trim() }
+elseif ((Get-UICulture).Name -like "en*") { $_initLang = "en" }
+$_initMsg = if ($_initLang -eq "en") { "System started" } else { "Sistema iniciado" }
+Update-Monitor -Etapa "FREGONATOR" -Progreso 0 -Log $_initMsg
 
 # =============================================================================
 # SPLASH SCREEN - NALA
@@ -420,6 +425,14 @@ $script:IDIOMAS = @{
         # Mensajes finales
         limpiezaFinalizada = "Limpieza finalizada"
         espacioLiberado = "Espacio liberado"
+        # Mensajes Monitor IPC
+        sistemaIniciado = "Sistema iniciado"
+        iniciandoLimpiezaRapida = "Iniciando limpieza rapida..."
+        iniciandoLimpiezaAvanzada = "Iniciando limpieza avanzada..."
+        tareaDeTotal = "Tarea {0} de {1}"
+        mbLiberados = "{0} MB liberados"
+        tiempoTranscurrido = "Tiempo transcurrido"
+        tiempoRestante = "Tiempo restante aproximado"
         tiempoTotal = "Tiempo total"
         tareas = "tareas"
         tareasCompletadas = "tareas completadas"
@@ -597,6 +610,14 @@ $script:IDIOMAS = @{
         # Final messages
         limpiezaFinalizada = "Cleanup finished"
         espacioLiberado = "Space freed"
+        # Monitor IPC messages
+        sistemaIniciado = "System started"
+        iniciandoLimpiezaRapida = "Starting quick cleanup..."
+        iniciandoLimpiezaAvanzada = "Starting advanced cleanup..."
+        tareaDeTotal = "Task {0} of {1}"
+        mbLiberados = "{0} MB freed"
+        tiempoTranscurrido = "Elapsed time"
+        tiempoRestante = "Estimated time remaining"
         tiempoTotal = "Total time"
         tareas = "tasks"
         tareasCompletadas = "tasks completed"
@@ -2631,7 +2652,7 @@ function Get-FraseRandom {
 
 function Start-OneClick {
     Show-Logo -Subtitulo "UN CLICK - OPTIMIZACION PARALELA"
-    Update-Monitor -Etapa "Limpieza Rapida" -Progreso 5 -Total 8 -Log "Iniciando limpieza rapida..."
+    Update-Monitor -Etapa (T "limpiezaRapida") -Progreso 5 -Total 8 -Log (T "iniciandoLimpiezaRapida")
 
     # Capturar espacio libre ANTES
     $script:Stats.BytesAntes = Get-DiscoLibre
@@ -2644,29 +2665,29 @@ function Start-OneClick {
 
     # ADVERTENCIA para PCs desactualizados
     Write-Host ""
-    Write-Host "    [!] NOTA: En PCs desactualizados, winget y Windows Update pueden" -ForegroundColor Yellow
-    Write-Host "        tardar varios minutos. Esto es NORMAL. Pulsa [ESC] para abortar." -ForegroundColor Yellow
+    Write-Host "    [!] $(T 'notaPCsDesactualizados')" -ForegroundColor Yellow
+    Write-Host "        $(T 'pulsaESC')." -ForegroundColor Yellow
     Write-Host ""
     Start-Sleep -Milliseconds 1500
 
     $tareas = @(
-        @{ Nombre = "Liberando RAM"; Detalle = "Optimizando Working Sets..."; Codigo = { [System.GC]::Collect(); [System.GC]::WaitForPendingFinalizers(); [System.GC]::Collect(); "OK" } }
-        @{ Nombre = "Limpiando temporales"; Detalle = "Eliminando: %TEMP%\*.tmp, *.log, *.cache"; Codigo = {
+        @{ Nombre = (T "liberandoRAM"); Detalle = "Optimizando Working Sets..."; Codigo = { [System.GC]::Collect(); [System.GC]::WaitForPendingFinalizers(); [System.GC]::Collect(); "OK" } }
+        @{ Nombre = (T "limpiandoTemp"); Detalle = "Eliminando: %TEMP%\*.tmp, *.log, *.cache"; Codigo = {
             $t = 0; @("$env:TEMP","$env:windir\Temp") | ForEach-Object {
                 if (Test-Path $_) { Get-ChildItem $_ -Recurse -Force -EA 0 | ForEach-Object { $t += $_.Length; Remove-Item $_.FullName -Force -Recurse -EA 0 } }
             }; $t
         }}
-        @{ Nombre = "Vaciando papelera"; Detalle = "Vaciando: Papelera de reciclaje (todas las unidades)"; Codigo = { Clear-RecycleBin -Force -EA 0; "OK" } }
-        @{ Nombre = "Limpiando cache DNS"; Detalle = "Ejecutando: ipconfig /flushdns"; Codigo = { ipconfig /flushdns 2>&1 | Out-Null; "OK" } }
-        @{ Nombre = "Optimizando discos"; Detalle = "Optimizando: TRIM en unidades SSD (C:, D:...)"; Codigo = { Get-Volume | Where-Object { $_.DriveLetter -and $_.DriveType -eq 'Fixed' } | ForEach-Object { Optimize-Volume -DriveLetter $_.DriveLetter -ReTrim -EA 0 }; "OK" } }
-        @{ Nombre = "Alto rendimiento"; Detalle = "Activando: Plan de energia Alto Rendimiento"; Codigo = { powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 2>&1 | Out-Null; "OK" } }
-        @{ Nombre = "Actualizando apps"; Detalle = "Ejecutando: winget upgrade --all (espera...)"; Codigo = {
+        @{ Nombre = (T "vaciandoPapelera"); Detalle = "Vaciando: Papelera de reciclaje"; Codigo = { Clear-RecycleBin -Force -EA 0; "OK" } }
+        @{ Nombre = (T "limpiandoDNS"); Detalle = "Ejecutando: ipconfig /flushdns"; Codigo = { ipconfig /flushdns 2>&1 | Out-Null; "OK" } }
+        @{ Nombre = (T "optimizandoDiscos"); Detalle = "TRIM en unidades SSD"; Codigo = { Get-Volume | Where-Object { $_.DriveLetter -and $_.DriveType -eq 'Fixed' } | ForEach-Object { Optimize-Volume -DriveLetter $_.DriveLetter -ReTrim -EA 0 }; "OK" } }
+        @{ Nombre = (T "configurandoEnergia"); Detalle = "Plan de energia Alto Rendimiento"; Codigo = { powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 2>&1 | Out-Null; "OK" } }
+        @{ Nombre = (T "actualizandoApps"); Detalle = "winget upgrade --all"; Codigo = {
             if (Get-Command winget -EA 0) {
                 $p = Start-Process winget -ArgumentList "upgrade --all --accept-source-agreements --accept-package-agreements --silent" -NoNewWindow -PassThru
                 if (-not $p.WaitForExit(180000)) { $p.Kill() }  # Timeout 180s (3 min) para PCs lentos
             }; "OK"
         }}
-        @{ Nombre = "Windows Update"; Detalle = "Ejecutando: UsoClient.exe StartScan"; Codigo = { Start-Process UsoClient.exe -ArgumentList "StartScan" -NoNewWindow -EA 0; "OK" } }
+        @{ Nombre = (T "verificandoUpdates"); Detalle = "UsoClient.exe StartScan"; Codigo = { Start-Process UsoClient.exe -ArgumentList "StartScan" -NoNewWindow -EA 0; "OK" } }
     )
 
     $total = $tareas.Count
@@ -2674,8 +2695,8 @@ function Start-OneClick {
 
     Write-Host ""
     $anchoCaja = 76
-    $textoHeader = "  EJECUCION PARALELA: 8 tareas simultaneas"
-    $textoESC = "[ESC] Abortar"
+    $textoHeader = "  $(T 'ejecucionParalela'): 8 $(T 'tareasParalelas')"
+    $textoESC = "[ESC] $(T 'abortar')"
     $espacios = $anchoCaja - $textoHeader.Length - $textoESC.Length
     $lineaHeader = "$textoHeader$(' ' * $espacios)$textoESC"
     Write-Host "    ╔════════════════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
@@ -2688,11 +2709,11 @@ function Start-OneClick {
         $num = "[$($i+1)/$total]"
         $barVacia = "░" * $anchoBar
         Write-Host "    $num $($tareas[$i].Nombre.PadRight(22)) [$barVacia] " -NoNewline -ForegroundColor DarkGray
-        Write-Host "Pendiente" -ForegroundColor DarkGray
+        Write-Host (T "pendiente") -ForegroundColor DarkGray
     }
     Write-Host ""
     $barGlobalVacia = "░" * 50
-    Write-Host "    GLOBAL: [$barGlobalVacia] 0%  (0/$total)" -ForegroundColor DarkGray
+    Write-Host "    $(T 'global'): [$barGlobalVacia] 0%  (0/$total)" -ForegroundColor DarkGray
     Write-Host ""
 
     # Guardar posicion para actualizar in-place
@@ -2794,7 +2815,7 @@ function Start-OneClick {
                 Add-TaskResult -Nombre $tareas[$i].Nombre -Estado "OK" -BytesLiberados $bytes
                 
                 # Actualizar monitor con tarea completada
-                Update-Monitor -Archivo $tareas[$i].Nombre -Log "Completado: $($tareas[$i].Nombre)"
+                Update-Monitor -Archivo $tareas[$i].Nombre -Log "$(T 'completado'): $($tareas[$i].Nombre)"
             }
         }
         
@@ -2803,7 +2824,7 @@ function Start-OneClick {
             Remove-Item "$env:PUBLIC\fregonator_abort.flag" -Force -ErrorAction SilentlyContinue
             $abortado = $true
             $jobs | Stop-Job -ErrorAction SilentlyContinue
-            Update-Monitor -Etapa "ABORTADO" -Log "Abortado por el usuario"
+            Update-Monitor -Etapa (T "abortado") -Log (T "abortadoPorUsuario")
             Write-Host ""
             Write-Host "    [!] ABORTADO desde Monitor GUI                                           " -ForegroundColor Red
             Write-Host ""
@@ -2835,7 +2856,7 @@ function Start-OneClick {
         if ($numCompletados -eq $total) { $pctGlobal = 100 }
         
         # Actualizar monitor externo
-        Update-Monitor -Progreso $pctGlobal -Archivos $numCompletados -Total $total -Log "Tarea $numCompletados de $total"
+        Update-Monitor -Progreso $pctGlobal -Archivos $numCompletados -Total $total -Log ((T "tareaDeTotal") -f $numCompletados, $total)
 
         $barLlena = "█" * [math]::Floor($pctGlobal / 2)
         $barVacia = "░" * (50 - [math]::Floor($pctGlobal / 2))
@@ -2845,9 +2866,9 @@ function Start-OneClick {
         Write-Host "    GLOBAL: [$barLlena$barVacia] $pctGlobal% ($numCompletados/$total)                    " -ForegroundColor Cyan
         Write-Host ""
         Set-CursorPositionSafe -X 0 -Y ($lineaBase + $total + 3)
-        Write-Host "                                                                 $elapsedStr (Tiempo transcurrido)            " -ForegroundColor DarkGray
+        Write-Host "                                                                 $elapsedStr ($(T 'tiempoTranscurrido'))            " -ForegroundColor DarkGray
         Set-CursorPositionSafe -X 0 -Y ($lineaBase + $total + 4)
-        Write-Host "                                                                 $remainingStr (Tiempo restante aproximado)   " -ForegroundColor DarkGray
+        Write-Host "                                                                 $remainingStr ($(T 'tiempoRestante'))   " -ForegroundColor DarkGray
 
         Start-Sleep -Milliseconds 250
     }
@@ -2916,7 +2937,7 @@ function Start-OneClick {
 
     # Notificacion Windows
     $totalMB = [math]::Round($totalBytes / 1MB, 0)
-    Update-Monitor -Etapa "Completado" -Progreso 100 -EspacioMB $totalMB -Log "Limpieza finalizada: $totalMB MB liberados" -Terminado
+    Update-Monitor -Etapa (T "completado") -Progreso 100 -EspacioMB $totalMB -Log "$(T 'limpiezaFinalizada'): $((T 'mbLiberados') -f $totalMB)" -Terminado
 
     # En modo GUI: terminar limpiamente sin menus
     if ($script:ModoGUI) {
@@ -2955,7 +2976,7 @@ function Start-OneClick {
 
 function Start-OneClickAvanzada {
     Show-Logo -Subtitulo "UN CLICK AVANZADA - OPTIMIZACION TOTAL"
-    Update-Monitor -Etapa "Limpieza Avanzada" -Progreso 5 -Total 13 -Log "Iniciando limpieza avanzada..."
+    Update-Monitor -Etapa (T "limpiezaCompleta") -Progreso 5 -Total 13 -Log (T "iniciandoLimpiezaAvanzada")
 
     # Capturar espacio libre ANTES
     $script:Stats.BytesAntes = Get-DiscoLibre
@@ -2968,69 +2989,69 @@ function Start-OneClickAvanzada {
 
     # ADVERTENCIA para PCs desactualizados
     Write-Host ""
-    Write-Host "    [!] NOTA: En PCs desactualizados, winget y Windows Update pueden" -ForegroundColor Yellow
-    Write-Host "        tardar varios minutos. Esto es NORMAL. Pulsa [ESC] para abortar." -ForegroundColor Yellow
+    Write-Host "    [!] $(T 'notaPCsDesactualizados')" -ForegroundColor Yellow
+    Write-Host "        $(T 'pulsaESC')." -ForegroundColor Yellow
     Write-Host ""
     Start-Sleep -Milliseconds 1500
 
     # PASO 1: Punto de restauracion (antes de todo)
     Write-Host ""
-    Write-Host "    [!] Creando punto de restauracion (por seguridad)..." -ForegroundColor Yellow
+    Write-Host "    [!] $(T 'creandoPuntoRestauracion')..." -ForegroundColor Yellow
     try {
         $null = Checkpoint-Computer -Description "FREGONATOR Pre-Optimizacion" -RestorePointType MODIFY_SETTINGS -ErrorAction Stop -WarningAction SilentlyContinue 2>&1
-        Write-Host "    [OK] Punto de restauracion creado" -ForegroundColor Cyan
-        Add-TaskResult -Nombre "Punto restauracion" -Estado "OK"
+        Write-Host "    [OK] $(T 'puntoCreado')" -ForegroundColor Cyan
+        Add-TaskResult -Nombre "Restore point" -Estado "OK"
     } catch {
         # Ya existe uno reciente o no se pudo crear
-        Write-Host "    [OK] Ya existe un punto reciente (continua)" -ForegroundColor DarkGray
-        Add-TaskResult -Nombre "Punto restauracion" -Estado "SKIP"
+        Write-Host "    [OK] $(T 'puntoExiste')" -ForegroundColor DarkGray
+        Add-TaskResult -Nombre "Restore point" -Estado "SKIP"
     }
     Start-Sleep -Milliseconds 500
 
     # PASO 2: Todas las tareas en paralelo (con detalles para el Monitor)
     $tareas = @(
         # Basicas (8)
-        @{ Nombre = "Liberando RAM"; Detalle = "Optimizando Working Sets..."; Codigo = { [System.GC]::Collect(); [System.GC]::WaitForPendingFinalizers(); [System.GC]::Collect(); "OK" } }
-        @{ Nombre = "Limpiando temporales"; Detalle = "Eliminando: %TEMP%\*.tmp, *.log, *.cache"; Codigo = {
+        @{ Nombre = (T "liberandoRAM"); Detalle = "Working Sets..."; Codigo = { [System.GC]::Collect(); [System.GC]::WaitForPendingFinalizers(); [System.GC]::Collect(); "OK" } }
+        @{ Nombre = (T "limpiandoTemp"); Detalle = "%TEMP%\*.tmp, *.log, *.cache"; Codigo = {
             $t = 0; @("$env:TEMP","$env:windir\Temp","$env:LOCALAPPDATA\Temp") | ForEach-Object {
                 if (Test-Path $_) { Get-ChildItem $_ -Recurse -Force -EA 0 | ForEach-Object { $t += $_.Length; Remove-Item $_.FullName -Force -Recurse -EA 0 } }
             }; $t
         }}
-        @{ Nombre = "Vaciando papelera"; Detalle = "Vaciando: Papelera de reciclaje (todas las unidades)"; Codigo = { Clear-RecycleBin -Force -EA 0; "OK" } }
-        @{ Nombre = "Limpiando cache DNS"; Detalle = "Ejecutando: ipconfig /flushdns"; Codigo = { ipconfig /flushdns 2>&1 | Out-Null; "OK" } }
-        @{ Nombre = "Optimizando discos"; Detalle = "Optimizando: TRIM en unidades SSD (C:, D:...)"; Codigo = { Get-Volume | Where-Object { $_.DriveLetter -and $_.DriveType -eq 'Fixed' } | ForEach-Object { Optimize-Volume -DriveLetter $_.DriveLetter -ReTrim -EA 0 }; "OK" } }
-        @{ Nombre = "Alto rendimiento"; Detalle = "Activando: Plan de energia Alto Rendimiento"; Codigo = { powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 2>&1 | Out-Null; "OK" } }
-        @{ Nombre = "Actualizando apps"; Detalle = "Ejecutando: winget upgrade --all (espera...)"; Codigo = {
+        @{ Nombre = (T "vaciandoPapelera"); Detalle = "Recycle Bin"; Codigo = { Clear-RecycleBin -Force -EA 0; "OK" } }
+        @{ Nombre = (T "limpiandoDNS"); Detalle = "ipconfig /flushdns"; Codigo = { ipconfig /flushdns 2>&1 | Out-Null; "OK" } }
+        @{ Nombre = (T "optimizandoDiscos"); Detalle = "TRIM SSD"; Codigo = { Get-Volume | Where-Object { $_.DriveLetter -and $_.DriveType -eq 'Fixed' } | ForEach-Object { Optimize-Volume -DriveLetter $_.DriveLetter -ReTrim -EA 0 }; "OK" } }
+        @{ Nombre = (T "configurandoEnergia"); Detalle = "High Performance"; Codigo = { powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 2>&1 | Out-Null; "OK" } }
+        @{ Nombre = (T "actualizandoApps"); Detalle = "winget upgrade --all"; Codigo = {
             if (Get-Command winget -EA 0) {
                 $p = Start-Process winget -ArgumentList "upgrade --all --accept-source-agreements --accept-package-agreements --silent" -NoNewWindow -PassThru
                 if (-not $p.WaitForExit(180000)) { $p.Kill() }  # Timeout 180s (3 min) para PCs lentos
             }; "OK"
         }}
-        @{ Nombre = "Windows Update"; Detalle = "Ejecutando: UsoClient.exe StartScan"; Codigo = { Start-Process UsoClient.exe -ArgumentList "StartScan" -NoNewWindow -EA 0; "OK" } }
+        @{ Nombre = (T "verificandoUpdates"); Detalle = "UsoClient.exe StartScan"; Codigo = { Start-Process UsoClient.exe -ArgumentList "StartScan" -NoNewWindow -EA 0; "OK" } }
         # Avanzadas
-        @{ Nombre = "Limpiando registro MRU"; Detalle = "Limpiando: HKCU\...\OpenSaveMRU, RunMRU"; Codigo = {
+        @{ Nombre = (T "limpiandoRegistro"); Detalle = "OpenSaveMRU, RunMRU"; Codigo = {
             @("HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\ComDlg32\OpenSaveMRU",
               "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU",
               "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\TypedPaths") | ForEach-Object {
                 if (Test-Path $_) { Remove-Item $_ -Recurse -Force -EA 0 }
             }; "OK"
         }}
-        @{ Nombre = "Matando procesos"; Detalle = "Cerrando: OneDrive, GameBar, Cortana, YourPhone..."; Codigo = {
+        @{ Nombre = (T "matandoProcesos"); Detalle = "OneDrive, Cortana..."; Codigo = {
             @("OneDrive","GameBar","Cortana","YourPhone","GrooveMusic") | ForEach-Object {
                 Get-Process -Name $_ -EA 0 | Stop-Process -Force -EA 0
             }; "OK"
         }}
-        @{ Nombre = "Telemetria OFF"; Detalle = "Desactivando: DiagTrack, dmwappushservice"; Codigo = {
+        @{ Nombre = (T "desactivandoTelemetria"); Detalle = "DiagTrack, dmwappushservice"; Codigo = {
             @("DiagTrack","dmwappushservice") | ForEach-Object {
                 Stop-Service $_ -Force -EA 0; Set-Service $_ -StartupType Disabled -EA 0
             }; "OK"
         }}
-        @{ Nombre = "Eliminando bloatware"; Detalle = "Desinstalando: CandyCrush, BubbleWitch, Solitaire, Bing..."; Codigo = {
+        @{ Nombre = (T "eliminandoBloatware"); Detalle = "CandyCrush, BubbleWitch..."; Codigo = {
             @("*CandyCrush*","*BubbleWitch*","*FarmVille*","*Disney*","*Microsoft.MicrosoftSolitaireCollection*","*Microsoft.Bing*","*Microsoft.YourPhone*") | ForEach-Object {
                 Get-AppxPackage $_ -EA 0 | Remove-AppxPackage -EA 0
             }; "OK"
         }}
-        @{ Nombre = "Efectos visuales"; Detalle = "Optimizando: Efectos visuales de Windows"; Codigo = {
+        @{ Nombre = (T "optimizandoEfectos"); Detalle = "Visual Effects"; Codigo = {
             Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects" -Name "VisualFXSetting" -Value 2 -EA 0; "OK"
         }}
     )
@@ -3041,8 +3062,8 @@ function Start-OneClickAvanzada {
 
     Write-Host ""
     $anchoCaja = 76
-    $textoHeader = "  EJECUCION PARALELA: $total tareas (basicas + avanzadas)"
-    $textoESC = "[ESC] Abortar"
+    $textoHeader = "  $(T 'ejecucionParalela'): $total $(T 'tareasBasicasAvanzadas')"
+    $textoESC = "[ESC] $(T 'abortar')"
     $espacios = $anchoCaja - $textoHeader.Length - $textoESC.Length
     $lineaHeader = "$textoHeader$(' ' * $espacios)$textoESC"
     Write-Host "    ╔════════════════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
@@ -3055,11 +3076,11 @@ function Start-OneClickAvanzada {
         $num = "[$($i+1)/$total]".PadRight(7)
         $barVacia = "░" * $anchoBar
         Write-Host "    $num $($tareas[$i].Nombre.PadRight(22)) [$barVacia] " -NoNewline -ForegroundColor DarkGray
-        Write-Host "Pendiente" -ForegroundColor DarkGray
+        Write-Host (T "pendiente") -ForegroundColor DarkGray
     }
     Write-Host ""
     $barGlobalVacia = "░" * 50
-    Write-Host "    GLOBAL: [$barGlobalVacia] 0%  (0/$total)" -ForegroundColor DarkGray
+    Write-Host "    $(T 'global'): [$barGlobalVacia] 0%  (0/$total)" -ForegroundColor DarkGray
     Write-Host ""
 
     $lineaBase = (Get-CursorTopSafe) - $total - 3
@@ -3156,7 +3177,7 @@ function Start-OneClickAvanzada {
                 Add-TaskResult -Nombre $tareas[$i].Nombre -Estado "OK" -BytesLiberados $bytes
                 
                 # Actualizar monitor con tarea completada
-                Update-Monitor -Archivo $tareas[$i].Nombre -Log "Completado: $($tareas[$i].Nombre)"
+                Update-Monitor -Archivo $tareas[$i].Nombre -Log "$(T 'completado'): $($tareas[$i].Nombre)"
             }
         }
         
@@ -3165,7 +3186,7 @@ function Start-OneClickAvanzada {
             Remove-Item "$env:PUBLIC\fregonator_abort.flag" -Force -ErrorAction SilentlyContinue
             $abortado = $true
             $jobs | Stop-Job -ErrorAction SilentlyContinue
-            Update-Monitor -Etapa "ABORTADO" -Log "Abortado por el usuario"
+            Update-Monitor -Etapa (T "abortado") -Log (T "abortadoPorUsuario")
             Write-Host ""
             Write-Host "    [!] ABORTADO desde Monitor GUI                                           " -ForegroundColor Red
             Write-Host ""
@@ -3197,7 +3218,7 @@ function Start-OneClickAvanzada {
         if ($numCompletados -eq $total) { $pctGlobal = 100 }
         
         # Actualizar monitor externo
-        Update-Monitor -Progreso $pctGlobal -Archivos $numCompletados -Total $total -Log "Tarea $numCompletados de $total"
+        Update-Monitor -Progreso $pctGlobal -Archivos $numCompletados -Total $total -Log ((T "tareaDeTotal") -f $numCompletados, $total)
 
         $barLlena = "█" * [math]::Floor($pctGlobal / 2)
         $barVacia = "░" * (50 - [math]::Floor($pctGlobal / 2))
@@ -3207,9 +3228,9 @@ function Start-OneClickAvanzada {
         Write-Host "    GLOBAL: [$barLlena$barVacia] $pctGlobal% ($numCompletados/$total)                    " -ForegroundColor Cyan
         Write-Host ""
         Set-CursorPositionSafe -X 0 -Y ($lineaBase + $total + 3)
-        Write-Host "                                                                 $elapsedStr (Tiempo transcurrido)            " -ForegroundColor DarkGray
+        Write-Host "                                                                 $elapsedStr ($(T 'tiempoTranscurrido'))            " -ForegroundColor DarkGray
         Set-CursorPositionSafe -X 0 -Y ($lineaBase + $total + 4)
-        Write-Host "                                                                 $remainingStr (Tiempo restante aproximado)   " -ForegroundColor DarkGray
+        Write-Host "                                                                 $remainingStr ($(T 'tiempoRestante'))   " -ForegroundColor DarkGray
 
         Start-Sleep -Milliseconds 250
     }
@@ -3369,7 +3390,7 @@ function Start-OneClickAvanzada {
 
     # Notificacion Windows
     $totalMB = [math]::Round($totalBytes / 1MB, 0)
-    Update-Monitor -Etapa "Completado" -Progreso 100 -EspacioMB $totalMB -Log "Limpieza finalizada: $totalMB MB liberados" -Terminado
+    Update-Monitor -Etapa (T "completado") -Progreso 100 -EspacioMB $totalMB -Log "$(T 'limpiezaFinalizada'): $((T 'mbLiberados') -f $totalMB)" -Terminado
 
     # En modo GUI: terminar limpiamente sin menus
     if ($script:ModoGUI) {

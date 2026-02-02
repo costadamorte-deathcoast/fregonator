@@ -48,17 +48,39 @@ $script:Lang = Get-SystemLanguage
 $script:Texts = @{
     es = @{
         tareas = "TAREAS"
+        liberado = "LIBERADO"
+        velocidad = "VELOCIDAD"
+        procesando = "PROCESANDO:"
         abortar = "ABORTAR"
         volver = "[V] VOLVER AL MENU"
         salir = "[X] SALIR"
         completado = "LIMPIEZA COMPLETADA!"
+        tareasFinalizadas = "Todas las tareas finalizadas"
+        liberadosEn = "liberados en"
+        completadoMsg = "COMPLETADO:"
+        iniciando = "> INICIANDO..."
+        esperando = "Esperando inicio..."
+        actividad = "ACTIVIDAD:"
+        abortando = "ABORTANDO..."
+        monitorIniciado = "Monitor iniciado - Esperando datos..."
     }
     en = @{
         tareas = "TASKS"
+        liberado = "FREED"
+        velocidad = "SPEED"
+        procesando = "PROCESSING:"
         abortar = "ABORT"
         volver = "[V] BACK TO MENU"
         salir = "[X] EXIT"
         completado = "CLEANUP COMPLETED!"
+        tareasFinalizadas = "All tasks completed"
+        liberadosEn = "freed in"
+        completadoMsg = "COMPLETED:"
+        iniciando = "> STARTING..."
+        esperando = "Waiting to start..."
+        actividad = "ACTIVITY:"
+        abortando = "ABORTING..."
+        monitorIniciado = "Monitor started - Waiting for data..."
     }
 }
 function Get-Text($key) { $script:Texts[$script:Lang][$key] }
@@ -206,7 +228,7 @@ if (Test-Path $LogoPath) {
 # ETAPA ACTUAL + SPINNER
 # =============================================================================
 $lblEtapa = New-Object System.Windows.Forms.Label
-$lblEtapa.Text = "> INICIANDO..."
+$lblEtapa.Text = (Get-Text "iniciando")
 $lblEtapa.Font = New-Object System.Drawing.Font($script:citaroFamily, 14)
 $lblEtapa.ForeColor = $script:ColCyan
 $lblEtapa.BackColor = $script:ColFondo
@@ -280,7 +302,7 @@ $pnlStats.Controls.Add($lblTareas)
 
 # Espacio liberado
 $lblEspacioIcon = New-Object System.Windows.Forms.Label
-$lblEspacioIcon.Text = "LIBERADO"
+$lblEspacioIcon.Text = (Get-Text "liberado")
 $lblEspacioIcon.Font = New-Object System.Drawing.Font("Segoe UI", 8)
 $lblEspacioIcon.ForeColor = $script:ColGris
 $lblEspacioIcon.Location = New-Object System.Drawing.Point(160, 8)
@@ -297,7 +319,7 @@ $pnlStats.Controls.Add($lblEspacio)
 
 # Velocidad
 $lblVelocidadIcon = New-Object System.Windows.Forms.Label
-$lblVelocidadIcon.Text = "VELOCIDAD"
+$lblVelocidadIcon.Text = (Get-Text "velocidad")
 $lblVelocidadIcon.Font = New-Object System.Drawing.Font("Segoe UI", 8)
 $lblVelocidadIcon.ForeColor = $script:ColGris
 $lblVelocidadIcon.Location = New-Object System.Drawing.Point(330, 8)
@@ -316,7 +338,7 @@ $pnlStats.Controls.Add($lblVelocidad)
 # TAREA ACTUAL - Mas prominente
 # =============================================================================
 $lblTareaLabel = New-Object System.Windows.Forms.Label
-$lblTareaLabel.Text = "PROCESANDO:"
+$lblTareaLabel.Text = (Get-Text "procesando")
 $lblTareaLabel.Font = New-Object System.Drawing.Font("Segoe UI Semibold", 9)
 $lblTareaLabel.ForeColor = $script:ColCyanDim
 $lblTareaLabel.Location = New-Object System.Drawing.Point(20, 330)
@@ -324,7 +346,7 @@ $lblTareaLabel.AutoSize = $true
 $form.Controls.Add($lblTareaLabel)
 
 $lblTareaActual = New-Object System.Windows.Forms.Label
-$lblTareaActual.Text = "Esperando inicio..."
+$lblTareaActual.Text = (Get-Text "esperando")
 $lblTareaActual.Font = New-Object System.Drawing.Font("Consolas", 10, [System.Drawing.FontStyle]::Bold)
 $lblTareaActual.ForeColor = $script:ColCyan
 $lblTareaActual.BackColor = $script:ColPanel
@@ -337,7 +359,7 @@ $form.Controls.Add($lblTareaActual)
 # LOG DE ACTIVIDAD
 # =============================================================================
 $lblLogLabel = New-Object System.Windows.Forms.Label
-$lblLogLabel.Text = "ACTIVIDAD:"
+$lblLogLabel.Text = (Get-Text "actividad")
 $lblLogLabel.Font = New-Object System.Drawing.Font("Segoe UI Semibold", 9)
 $lblLogLabel.ForeColor = $script:ColCyanDim
 $lblLogLabel.Location = New-Object System.Drawing.Point(20, 388)
@@ -376,9 +398,9 @@ $btnAbortar.Add_MouseLeave({ $this.ForeColor = $script:ColRojo })
 $btnAbortar.Add_Click({
     "ABORT" | Out-File $AbortFile -Force
     $ts = Get-Date -Format "HH:mm:ss"
-    $txtLog.AppendText("[$ts] ABORTANDO...`r`n")
+    $txtLog.AppendText("[$ts] $(Get-Text 'abortando')`r`n")
     $this.Enabled = $false
-    $this.Text = "ABORTANDO..."
+    $this.Text = (Get-Text "abortando")
     $this.ForeColor = $script:ColGris
 })
 $form.Controls.Add($btnAbortar)
@@ -531,7 +553,7 @@ $timer.Add_Tick({
                         $lblPorcentaje.Text = "100%"
                         $lblEtapa.ForeColor = $script:ColVerde
                         $lblEtapa.Text = (Get-Text "completado")
-                        $lblTareaActual.Text = "Todas las tareas finalizadas"
+                        $lblTareaActual.Text = (Get-Text "tareasFinalizadas")
                         $lblTareaActual.ForeColor = $script:ColVerde
 
                         # Ocultar abortar, mostrar botones finales
@@ -540,11 +562,11 @@ $timer.Add_Tick({
 
                         # Mensaje final con espacio y tiempo
                         $espacio = if ($data.EspacioLiberado -ge 1024) { "{0:N1} GB" -f ($data.EspacioLiberado / 1024) } else { "{0:N0} MB" -f $data.EspacioLiberado }
-                        $lblFinalMsg.Text = "$espacio liberados en {0:mm\:ss}" -f $elapsed
+                        $lblFinalMsg.Text = "$espacio $(Get-Text 'liberadosEn') {0:mm\:ss}" -f $elapsed
 
                         # Log final
                         $ts = Get-Date -Format "HH:mm:ss"
-                        $txtLog.AppendText("[$ts] COMPLETADO: $espacio liberados en {0:mm\:ss}`r`n" -f $elapsed)
+                        $txtLog.AppendText("[$ts] $(Get-Text 'completadoMsg') $espacio $(Get-Text 'liberadosEn') {0:mm\:ss}`r`n" -f $elapsed)
 
                         # Sonido de Nala (ladrido)
                         if (Test-Path $SoundPath) {
@@ -566,7 +588,7 @@ $timer.Add_Tick({
 $form.Add_Shown({
     $timer.Start()
     $ts = Get-Date -Format "HH:mm:ss"
-    $txtLog.AppendText("[$ts] Monitor iniciado - Esperando datos...`r`n")
+    $txtLog.AppendText("[$ts] $(Get-Text 'monitorIniciado')`r`n")
     if (Test-Path $AbortFile) { Remove-Item $AbortFile -Force }
 })
 
