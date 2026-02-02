@@ -30,6 +30,39 @@ $AbortFile = "$env:PUBLIC\fregonator_abort.flag"
 $LauncherScript = Join-Path $ScriptPath "Fregonator-Launcher.ps1"
 $SoundPath = Join-Path $ScriptPath "sounds\bark.wav"
 
+# =============================================================================
+# IDIOMA - Leer preferencia guardada
+# =============================================================================
+function Get-SystemLanguage {
+    $configFile = "$env:LOCALAPPDATA\FREGONATOR\lang.txt"
+    if (Test-Path $configFile) {
+        $saved = (Get-Content $configFile -Raw).Trim()
+        if ($saved -eq "en" -or $saved -eq "es") { return $saved }
+    }
+    $uiCulture = (Get-UICulture).Name
+    if ($uiCulture -like "en*") { return "en" }
+    return "es"
+}
+$script:Lang = Get-SystemLanguage
+
+$script:Texts = @{
+    es = @{
+        tareas = "TAREAS"
+        abortar = "ABORTAR"
+        volver = "[V] VOLVER AL MENU"
+        salir = "[X] SALIR"
+        completado = "LIMPIEZA COMPLETADA!"
+    }
+    en = @{
+        tareas = "TASKS"
+        abortar = "ABORT"
+        volver = "[V] BACK TO MENU"
+        salir = "[X] EXIT"
+        completado = "CLEANUP COMPLETED!"
+    }
+}
+function Get-Text($key) { $script:Texts[$script:Lang][$key] }
+
 # Cargar fuente Citaro
 $script:privateFonts = New-Object System.Drawing.Text.PrivateFontCollection
 if (Test-Path $FontPath) {
@@ -230,7 +263,7 @@ $form.Controls.Add($pnlStats)
 
 # Tareas
 $lblTareasIcon = New-Object System.Windows.Forms.Label
-$lblTareasIcon.Text = "TAREAS"
+$lblTareasIcon.Text = (Get-Text "tareas")
 $lblTareasIcon.Font = New-Object System.Drawing.Font("Segoe UI", 8)
 $lblTareasIcon.ForeColor = $script:ColGris
 $lblTareasIcon.Location = New-Object System.Drawing.Point(20, 8)
@@ -327,7 +360,7 @@ $form.Controls.Add($txtLog)
 # BOTON ABORTAR (se oculta al terminar)
 # =============================================================================
 $btnAbortar = New-Object System.Windows.Forms.Button
-$btnAbortar.Text = "ABORTAR"
+$btnAbortar.Text = (Get-Text "abortar")
 $btnAbortar.Font = New-Object System.Drawing.Font($script:citaroFamily, 14)
 $btnAbortar.ForeColor = $script:ColRojo
 $btnAbortar.BackColor = $script:ColPanel
@@ -362,7 +395,7 @@ $form.Controls.Add($pnlFinal)
 
 # Boton Volver al menu
 $btnVolver = New-Object System.Windows.Forms.Button
-$btnVolver.Text = "[V] VOLVER AL MENU"
+$btnVolver.Text = (Get-Text "volver")
 $btnVolver.Font = New-Object System.Drawing.Font($script:citaroFamily, 13)
 $btnVolver.ForeColor = $script:ColCyan
 $btnVolver.BackColor = $script:ColPanel
@@ -384,7 +417,7 @@ $pnlFinal.Controls.Add($btnVolver)
 
 # Boton Salir
 $btnSalirFinal = New-Object System.Windows.Forms.Button
-$btnSalirFinal.Text = "[X] SALIR"
+$btnSalirFinal.Text = (Get-Text "salir")
 $btnSalirFinal.Font = New-Object System.Drawing.Font($script:citaroFamily, 13)
 $btnSalirFinal.ForeColor = $script:ColGris
 $btnSalirFinal.BackColor = $script:ColPanel
@@ -497,7 +530,7 @@ $timer.Add_Tick({
                         $lblPorcentaje.ForeColor = $script:ColVerde
                         $lblPorcentaje.Text = "100%"
                         $lblEtapa.ForeColor = $script:ColVerde
-                        $lblEtapa.Text = "LIMPIEZA COMPLETADA!"
+                        $lblEtapa.Text = (Get-Text "completado")
                         $lblTareaActual.Text = "Todas las tareas finalizadas"
                         $lblTareaActual.ForeColor = $script:ColVerde
 

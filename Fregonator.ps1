@@ -684,8 +684,15 @@ function T {
     return $Key
 }
 
-# Detectar idioma del sistema (ES/EN)
+# Detectar idioma - Preferencia guardada > Sistema
 function Get-SystemLanguage {
+    # Primero verificar preferencia guardada
+    $configFile = "$env:LOCALAPPDATA\FREGONATOR\lang.txt"
+    if (Test-Path $configFile) {
+        $saved = (Get-Content $configFile -Raw).Trim()
+        if ($saved -eq "en" -or $saved -eq "es") { return $saved }
+    }
+
     # Usar UICulture (idioma de interfaz) en lugar de Culture (formato regional)
     $uiCulture = (Get-UICulture).Name
     $culture = (Get-Culture).Name

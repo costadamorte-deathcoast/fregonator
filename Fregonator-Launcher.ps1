@@ -173,7 +173,7 @@ if (Test-Path $script:LogoPath) {
     $picLogo.Image = [System.Drawing.Image]::FromFile($script:LogoPath)
     $picLogo.SizeMode = "Zoom"
     $picLogo.Location = New-Object System.Drawing.Point(40, 20)
-    $picLogo.Size = New-Object System.Drawing.Size(420, 100)
+    $picLogo.Size = New-Object System.Drawing.Size(380, 100)
     $picLogo.BackColor = $script:ColFondo
     $picLogo.Cursor = "Hand"
     $picLogo.Add_Click({ Start-Process "https://fregonator.com" })
@@ -505,7 +505,7 @@ $btnSound.FlatStyle = "Flat"
 $btnSound.FlatAppearance.BorderSize = 0
 $btnSound.FlatAppearance.MouseOverBackColor = $script:ColBoton
 $btnSound.BackColor = $script:ColFondo
-$btnSound.Location = New-Object System.Drawing.Point(455, 55)
+$btnSound.Location = New-Object System.Drawing.Point(470, 15)
 $btnSound.Size = New-Object System.Drawing.Size(35, 35)
 $btnSound.Cursor = "Hand"
 
@@ -554,7 +554,7 @@ $btnLang.BackColor = $script:ColFondo
 $btnLang.ForeColor = $script:ColCyan
 $btnLang.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
 $btnLang.Text = $script:Lang.ToUpper()
-$btnLang.Location = New-Object System.Drawing.Point(415, 55)
+$btnLang.Location = New-Object System.Drawing.Point(430, 15)
 $btnLang.Size = New-Object System.Drawing.Size(35, 35)
 $btnLang.Cursor = "Hand"
 
@@ -569,9 +569,20 @@ $btnLang.Add_Click({
     if (-not (Test-Path $configDir)) { New-Item -ItemType Directory -Path $configDir -Force | Out-Null }
     $script:Lang | Out-File $configFile -Force
 
-    # Reiniciar launcher para aplicar traducciones
-    $form.Close()
-    Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File `"$($script:ScriptPath)\Fregonator-Launcher.ps1`"" -WindowStyle Hidden
+    # Actualizar textos de botones en vivo
+    $btn1.Tag.Titulo = Get-Text "limpiezaRapida"
+    $btn1.Tag.Desc = Get-Text "descRapida"
+    $btn1.Invalidate()
+
+    $btn2.Tag.Titulo = Get-Text "limpiezaCompleta"
+    $btn2.Tag.Desc = Get-Text "descCompleta"
+    $btn2.Invalidate()
+
+    $btn3.Tag.Titulo = Get-Text "terminal"
+    $btn3.Tag.Desc = Get-Text "descTerminal"
+    $btn3.Invalidate()
+
+    $btnSalir.Text = "[X] " + (Get-Text "salir")
 })
 $form.Controls.Add($btnLang)
 
