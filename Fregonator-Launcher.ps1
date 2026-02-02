@@ -547,26 +547,21 @@ $form.Controls.Add($btnSound)
 # ============================================================================
 $btnLang = New-Object System.Windows.Forms.Button
 $btnLang.FlatStyle = "Flat"
-$btnLang.FlatAppearance.BorderSize = 0
+$btnLang.FlatAppearance.BorderSize = 1
+$btnLang.FlatAppearance.BorderColor = $script:ColCyan
 $btnLang.FlatAppearance.MouseOverBackColor = $script:ColBoton
 $btnLang.BackColor = $script:ColFondo
+$btnLang.ForeColor = $script:ColCyan
+$btnLang.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
+$btnLang.Text = $script:Lang.ToUpper()
 $btnLang.Location = New-Object System.Drawing.Point(415, 55)
 $btnLang.Size = New-Object System.Drawing.Size(35, 35)
 $btnLang.Cursor = "Hand"
 
-$btnLang.Add_Paint({
-    param($sender, $e)
-    $g = $e.Graphics
-    $g.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::ClearTypeGridFit
-    $langText = $script:Lang.ToUpper()
-    $font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
-    $brush = New-Object System.Drawing.SolidBrush($script:ColCyan)
-    $g.DrawString($langText, $font, $brush, 5, 8)
-})
-
 $btnLang.Add_Click({
     # Toggle idioma
     $script:Lang = if ($script:Lang -eq "es") { "en" } else { "es" }
+    $this.Text = $script:Lang.ToUpper()
 
     # Guardar preferencia
     $configFile = "$env:LOCALAPPDATA\FREGONATOR\lang.txt"
@@ -574,7 +569,7 @@ $btnLang.Add_Click({
     if (-not (Test-Path $configDir)) { New-Item -ItemType Directory -Path $configDir -Force | Out-Null }
     $script:Lang | Out-File $configFile -Force
 
-    # Reiniciar launcher para aplicar
+    # Reiniciar launcher para aplicar traducciones
     $form.Close()
     Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File `"$($script:ScriptPath)\Fregonator-Launcher.ps1`"" -WindowStyle Hidden
 })
