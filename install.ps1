@@ -2,7 +2,7 @@
 # Usage: irm https://raw.githubusercontent.com/dthcst/fregonator/main/install.ps1 | iex
 
 $repo = "dthcst/fregonator"
-$installPath = "$env:ProgramFiles\FREGONATOR"
+$installPath = "$env:LOCALAPPDATA\FREGONATOR"
 
 Clear-Host
 
@@ -15,18 +15,8 @@ Write-Host "  ██╔══╝  ██╔══██╗██╔══╝  �
 Write-Host "  ██║     ██║  ██║███████╗╚██████╔╝╚██████╔╝██║ ╚████║██║  ██║   ██║   ╚██████╔╝██║  ██║" -ForegroundColor Cyan
 Write-Host "  ╚═╝     ╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "  Quick Installer - https://fregonator.com" -ForegroundColor White
+Write-Host "  Quick Installer" -ForegroundColor White
 Write-Host ""
-
-# Check admin
-$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-
-if (-not $isAdmin) {
-    Write-Host "  [!] Admin required. Relaunching..." -ForegroundColor Yellow
-    Write-Host ""
-    Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -Command `"irm https://raw.githubusercontent.com/$repo/main/install.ps1 | iex; Read-Host 'Press Enter'`"" -Verb RunAs
-    return
-}
 
 try {
     # Download
@@ -50,14 +40,13 @@ try {
     $sourceDir = Get-ChildItem $tempDir -Directory | Select-Object -First 1
     if ($sourceDir) { $sourceDir = $sourceDir.FullName } else { $sourceDir = $tempDir }
 
-    if (-not (Test-Path $installPath)) {
-        New-Item -ItemType Directory -Path $installPath -Force | Out-Null
-    }
+    if (Test-Path $installPath) { Remove-Item $installPath -Recurse -Force }
+    New-Item -ItemType Directory -Path $installPath -Force | Out-Null
     Copy-Item "$sourceDir\*" -Destination $installPath -Recurse -Force
     Write-Host "        OK" -ForegroundColor Green
 
     # Shortcuts
-    Write-Host "  [4/4] Creating shortcuts..." -ForegroundColor Yellow
+    Write-Host "  [4/4] Creating shortcut..." -ForegroundColor Yellow
     $WshShell = New-Object -ComObject WScript.Shell
 
     $desktopLink = "$env:USERPROFILE\Desktop\FREGONATOR.lnk"
@@ -66,13 +55,6 @@ try {
     $shortcut.WorkingDirectory = $installPath
     $shortcut.IconLocation = "$installPath\fregonator.ico"
     $shortcut.Save()
-
-    $startMenu = "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\FREGONATOR.lnk"
-    $shortcut2 = $WshShell.CreateShortcut($startMenu)
-    $shortcut2.TargetPath = "$installPath\FREGONATOR.bat"
-    $shortcut2.WorkingDirectory = $installPath
-    $shortcut2.IconLocation = "$installPath\fregonator.ico"
-    $shortcut2.Save()
     Write-Host "        OK" -ForegroundColor Green
 
     # Cleanup
@@ -80,20 +62,20 @@ try {
     Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue
 
     Write-Host ""
-    Write-Host "  ============================================" -ForegroundColor Green
-    Write-Host "     FREGONATOR installed successfully!" -ForegroundColor Green
-    Write-Host "  ============================================" -ForegroundColor Green
+    Write-Host "  ==========================================" -ForegroundColor Green
+    Write-Host "    FREGONATOR installed successfully!" -ForegroundColor Green
+    Write-Host "  ==========================================" -ForegroundColor Green
     Write-Host ""
     Write-Host "  Location: $installPath" -ForegroundColor White
-    Write-Host "  Shortcut on Desktop + Start Menu" -ForegroundColor White
+    Write-Host "  Shortcut: Desktop" -ForegroundColor White
+    Write-Host ""
+    Write-Host "  Double-click FREGONATOR on your Desktop to run!" -ForegroundColor Cyan
     Write-Host ""
 
 } catch {
     Write-Host ""
     Write-Host "  [ERROR] $($_.Exception.Message)" -ForegroundColor Red
-    Write-Host "  Download manually: https://fregonator.com" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "  Try: https://github.com/dthcst/fregonator" -ForegroundColor Yellow
     Write-Host ""
 }
-
-Write-Host "  Press Enter to exit..." -ForegroundColor Gray
-$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
