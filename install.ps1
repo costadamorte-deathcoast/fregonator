@@ -29,22 +29,10 @@ if (-not $isAdmin) {
 }
 
 try {
-    # Get latest release info
+    # Download from main branch
     Write-Host "  [1/4] Fetching latest version..." -ForegroundColor Yellow
-    $releases = Invoke-RestMethod "https://api.github.com/repos/$repo/releases/latest" -ErrorAction SilentlyContinue
-
-    if ($releases) {
-        $version = $releases.tag_name
-        $zipAsset = $releases.assets | Where-Object { $_.name -like "*.zip" } | Select-Object -First 1
-        $downloadUrl = $zipAsset.browser_download_url
-    }
-
-    # Fallback to main branch if no releases
-    if (-not $downloadUrl) {
-        Write-Host "  [i] No releases found, downloading from main branch..." -ForegroundColor Gray
-        $downloadUrl = "https://github.com/$repo/archive/refs/heads/main.zip"
-        $version = "latest"
-    }
+    $downloadUrl = "https://github.com/$repo/archive/refs/heads/main.zip"
+    $version = "v4.0"
 
     # Download
     Write-Host "  [2/4] Downloading FREGONATOR $version..." -ForegroundColor Yellow
