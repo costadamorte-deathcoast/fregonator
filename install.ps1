@@ -24,7 +24,7 @@ if (-not $isAdmin) {
     Write-Host "  [!] Requesting admin privileges..." -ForegroundColor Yellow
     $script = [System.IO.Path]::GetTempFileName() + ".ps1"
     Invoke-RestMethod "https://raw.githubusercontent.com/$repo/main/install.ps1" -OutFile $script
-    Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File `"$script`"" -Verb RunAs
+    Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -NoExit -File `"$script`"" -Verb RunAs
     exit
 }
 
