@@ -1,4 +1,4 @@
-# FREGONATOR v4.0
+# Fregonator v5.0
 
 ## Optimizador de PC para Windows
 
@@ -76,7 +76,7 @@ Doble clic en FREGONATOR.bat
 
 ### [2] LIMPIEZA COMPLETA (13 tareas)
 Todo lo anterior MÁS:
-- Eliminar bloatware (CandyCrush, Solitaire, Bing, Xbox)
+- Eliminar bloatware (CandyCrush, Solitaire, Bing)
 - Desactivar telemetría
 - Limpiar registro MRU
 - Matar procesos innecesarios

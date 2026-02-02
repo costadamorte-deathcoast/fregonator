@@ -1,0 +1,52 @@
+================================================================================
+                         FREGONATOR - LICENSE AND DISCLAIMER
+================================================================================
+
+FREGONATOR is FREE software. You may use, copy, and distribute it
+freely for personal or commercial use.
+
+================================================================================
+                              DISCLAIMER
+================================================================================
+
+BY USING THIS SOFTWARE, YOU ACCEPT AND UNDERSTAND THAT:
+
+1. FREGONATOR is provided "AS IS", without warranties of any kind,
+   either express or implied.
+
+2. The author is NOT LIABLE for:
+   - Data loss
+   - Operating system damage
+   - Hardware failures
+   - Any other issues arising from the use of this software
+
+3. FREGONATOR performs cleanup and optimization operations that MODIFY
+   Windows operating system settings. These operations include:
+   - Deleting temporary files and cache
+   - Modifying the Windows registry
+   - Stopping services and processes
+   - Changing power and performance settings
+
+4. It is YOUR RESPONSIBILITY to:
+   - Back up your important data BEFORE using this software
+   - Understand what each operation does before running it
+   - Use the software at your own risk
+
+5. This software requires ADMINISTRATOR permissions to function.
+   By granting these permissions, you accept that the software may modify
+   your system.
+
+================================================================================
+                              USE AT YOUR OWN RISK
+================================================================================
+
+If you do not agree to these terms, DO NOT USE this software.
+
+By running FREGONATOR, you confirm that you have read and accepted this license.
+
+================================================================================
+
+Developed with Claude Code (Anthropic)
+Costa da Morte - www.costa-da-morte.com
+
+2026 - Free and open source software

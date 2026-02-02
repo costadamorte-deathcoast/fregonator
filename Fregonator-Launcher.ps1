@@ -1,5 +1,5 @@
 <#
-    FREGONATOR LAUNCHER v4.0
+    FREGONATOR LAUNCHER v5.0
     Menu principal con efecto Glow + Sonidos
     - Oculto de barra de tareas
     2026
@@ -67,7 +67,7 @@ $script:Texts = @{
         activar = "ACTIVAR"
         cancelar = "CANCELAR"
         infoLimpieza = "La limpieza se ejecutara en segundo plano`nusando el modo silencioso (sin ventanas)."
-        version = "v4.0"
+        version = "v5.0"
     }
     en = @{
         limpiezaRapida = "QUICK CLEANUP"
@@ -85,7 +85,7 @@ $script:Texts = @{
         activar = "ACTIVATE"
         cancelar = "CANCEL"
         infoLimpieza = "Cleanup will run in the background`nusing silent mode (no windows)."
-        version = "v4.0"
+        version = "v5.0"
     }
 }
 
@@ -584,7 +584,7 @@ $form.Controls.Add($btnLang)
 # FOOTER
 # ============================================================================
 $lblVersion = New-Object System.Windows.Forms.Label
-$lblVersion.Text = "v4.0"
+$lblVersion.Text = "v5.0"
 $lblVersion.Font = New-Object System.Drawing.Font("Consolas", 8)
 $lblVersion.ForeColor = [System.Drawing.Color]::FromArgb(50, 50, 55)
 $lblVersion.Location = New-Object System.Drawing.Point(40, 485)

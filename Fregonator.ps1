@@ -1,5 +1,5 @@
 ﻿# =============================================================================
-# FREGONATOR v4.0 - OPTIMIZADOR DE PC
+# FREGONATOR v5.0 - OPTIMIZADOR DE PC
 # El modulo DEFINITIVO: Limpieza Rapida / Avanzada / Profunda
 # 100% nativo Windows - Sin dependencias externas
 # www.fregonator.com | ARCAMIA-MEMMEM
@@ -32,7 +32,7 @@ param(
 # Mostrar ayuda si se solicita
 if ($Help) {
     Write-Host ""
-    Write-Host "  FREGONATOR v4.0 - Optimizador de PC" -ForegroundColor Cyan
+    Write-Host "  FREGONATOR v5.0 - Optimizador de PC" -ForegroundColor Cyan
     Write-Host "  ======================================" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "  USO:" -ForegroundColor Yellow
@@ -318,7 +318,7 @@ Set-FondoOscuro
 # =============================================================================
 
 $script:CONFIG = @{
-    Version = "v4.0"
+    Version = "v5.0"
     LogPath = "$env:USERPROFILE\Documents\ARCAMIA-MEMMEM\Logs\FREGONATOR"
     HistorialPath = "$env:USERPROFILE\Documents\ARCAMIA-MEMMEM\Logs\FREGONATOR\historial.json"
     Idioma = "es"  # es, gl, en
@@ -338,8 +338,8 @@ $script:CONFIG = @{
         "*Microsoft.MicrosoftSolitaireCollection*"
         # Apps Microsoft innecesarias
         "*Microsoft.BingWeather*", "*Microsoft.BingNews*"
-        "*Microsoft.Xbox*", "*Microsoft.YourPhone*"
-        # NOTA: Spotify, Netflix, TikTok, Facebook NO se eliminan
+        "*Microsoft.YourPhone*"
+        # NOTA: Spotify, Netflix, TikTok, Facebook, Xbox Game Bar NO se eliminan
         # Son apps legitimas que el usuario puede querer mantener
     )
 }
@@ -1362,7 +1362,7 @@ function Export-FregonatorHTML {
         <div class="Copyright">
             <div>$fecha</div>
             <div class="branding">
-                <span class="logo-text">FREGONATOR v4.0 | ARCAMIA-MEMMEM</span>
+                <span class="logo-text">FREGONATOR v5.0 | ARCAMIA-MEMMEM</span>
                 <span>
                     <a href="https://www.fregonator.com">fregonator.com</a> |
                     <a href="https://www.costa-da-morte.com">costa-da-morte.com</a>
@@ -1433,7 +1433,7 @@ function Show-FregonatorSplash {
         "                         _____|  |_____",
         "                        /              \",
         "                       |   FREGONATOR   |",
-        "                       |     v4.0     |",
+        "                       |     v5.0     |",
         "                        \______________/",
         "                         |||||||||||||||",
         "                         |||||||||||||||",
@@ -3019,7 +3019,7 @@ function Start-OneClickAvanzada {
             }; "OK"
         }}
         @{ Nombre = "Eliminando bloatware"; Detalle = "Desinstalando: CandyCrush, BubbleWitch, Solitaire, Bing..."; Codigo = {
-            @("*CandyCrush*","*BubbleWitch*","*FarmVille*","*Disney*","*Microsoft.MicrosoftSolitaireCollection*","*Microsoft.Bing*","*Microsoft.Xbox*","*Microsoft.YourPhone*") | ForEach-Object {
+            @("*CandyCrush*","*BubbleWitch*","*FarmVille*","*Disney*","*Microsoft.MicrosoftSolitaireCollection*","*Microsoft.Bing*","*Microsoft.YourPhone*") | ForEach-Object {
                 Get-AppxPackage $_ -EA 0 | Remove-AppxPackage -EA 0
             }; "OK"
         }}
@@ -3663,7 +3663,7 @@ if ($AutoAvanzada) {
 if ($script:SilentMode) {
     # Modo silencioso: ejecutar y salir
     Write-Host ""
-    Write-Host "  FREGONATOR v4.0 - Modo Silencioso" -ForegroundColor Cyan
+    Write-Host "  FREGONATOR v5.0 - Modo Silencioso" -ForegroundColor Cyan
     Write-Host "  =====================================" -ForegroundColor Cyan
     Write-Host ""
 

@@ -1,4 +1,4 @@
-# FREGONATOR v4.0
+# Fregonator v5.0
 
 ## PC Optimizer for Windows
 
@@ -76,7 +76,7 @@ Double-click FREGONATOR.bat
 
 ### [2] FULL CLEANUP (13 tasks)
 Everything above PLUS:
-- Remove bloatware (CandyCrush, Solitaire, Bing, Xbox)
+- Remove bloatware (CandyCrush, Solitaire, Bing)
 - Disable telemetry
 - Clean MRU registry
 - Kill unnecessary processes

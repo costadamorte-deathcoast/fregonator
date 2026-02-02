@@ -1,5 +1,5 @@
 <#
-    FREGONATOR v4.0 - Instalador Nativo PowerShell
+    Fregonator v5.0 - Instalador Nativo PowerShell
     - Instala en Program Files
     - Crea acceso directo en Escritorio y Menu Inicio
     - Registra en "Agregar o quitar programas"
@@ -16,8 +16,8 @@ $ErrorActionPreference = "Stop"
 # ============================================================================
 # CONFIGURACION
 # ============================================================================
-$AppName = "FREGONATOR"
-$AppVersion = "4.0"
+$AppName = "Fregonator"
+$AppVersion = "5.0"
 $AppPublisher = "Costa da Morte / Claude Code"
 $AppURL = "https://fregonator.com"
 $InstallDir = "$env:ProgramFiles\$AppName"

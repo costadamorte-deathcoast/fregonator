@@ -1,5 +1,5 @@
 <#
-    FREGONATOR MONITOR v4.0
+    FREGONATOR MONITOR v5.0
     Panel de progreso en tiempo real
     - Oculto de barra de tareas (solo visible en pantalla)
     - Muestra actividad real (archivos/apps procesandose)
